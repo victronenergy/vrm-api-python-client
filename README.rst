@@ -1,4 +1,4 @@
-vrm-api is a python client for interacting with victron installations.
+vrm-api is a python client for interacting with the Victron VRM portal (http://vrm.victronenergy.com)
 
 installation
 ------------
