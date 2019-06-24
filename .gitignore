@@ -5,3 +5,4 @@ dist
 *.swp
 *.swn
 *.egg-info
+.idea

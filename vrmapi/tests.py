@@ -1,11 +1,7 @@
 import unittest
-import os
 
 # What we are testing
 from vrm import VRM_API
-
-# Helpers
-from datetime import datetime, timedelta, date
 
 
 class TestAPIMethods(unittest.TestCase):
@@ -24,8 +20,7 @@ class TestAPIMethods(unittest.TestCase):
         """
         self.demo_user_id = 22
         self.demo_site_id = 2286
-        self.config = {'api_endpoint':'https://vrmapi.victronenergy.com'}
-        self.client = VRM_API(config=self.config, demo=True)
+        self.client = VRM_API(demo=True)
         pass
 
     def tearDown(self):
@@ -44,8 +39,7 @@ class TestAPIMethods(unittest.TestCase):
         now = '1466936333'
         last_week_now = '1466331533'
         result = self.client.get_counters_site(self.demo_site_id, last_week_now, now)
-        self.assertEqual(result.has_key('records'),True)
-
+        self.assertEqual('records' in result, True)
 
     def test_consumption_stats(self):
         """
@@ -54,40 +48,39 @@ class TestAPIMethods(unittest.TestCase):
         """
         result = self.client.get_consumption_stats(self.demo_site_id)
         self.assertTrue(result['success'])
-        self.assertTrue(result.has_key('records'))
-    
+        self.assertTrue('records' in result)
+
     def test_kwh_stats(self):
         """
         Test the returning of the kwh stats
         """
         result = self.client.get_consumption_stats(inst_id=self.demo_site_id)
         self.assertTrue(result['success'])
-        self.assertTrue(result.has_key('records')) 
-  
+        self.assertTrue('records' in result)
+
     def test_consumption_aggr_stats(self):
         """
         Test the aggregated stats 
         """
-        result = self.client.get_consumption_aggr_stats(inst_id=self.demo_site_id)
+        result = self.client.consumption_aggr_stats(inst_id=self.demo_site_id)
         self.assertTrue(result['success'])
-        self.assertTrue(result.has_key('records'))
+        self.assertTrue('records' in result)
 
     def test_kwh_aggr_stats(self):
         """
         Test the kwh aggregated stats
         """
-        result = self.client.get_kwh_aggr_stats(inst_id=self.demo_site_id)
+        result = self.client.kwh_aggr_stats(inst_id=self.demo_site_id)
         self.assertTrue(result['success'])
-        self.assertTrue(result.has_key('records'))
- 
+        self.assertTrue('records' in result)
 
     def test_graph_widgets(self):
         """
         Testing the graph widgets 
         """
-        result = self.client.get_graph_widgets(self.demo_site_id, ['IV1', 'IV2'])
+        result = self.client.graph_widgets(self.demo_site_id, ['IV1', 'IV2'])
         self.assertTrue(result['success'])
-        self.assertTrue(result.has_key('records'))   
+        self.assertTrue('records' in result)
 
     def test_user_sites(self):
         """
@@ -96,20 +89,16 @@ class TestAPIMethods(unittest.TestCase):
         # Testing the user sites simplified version
         sites_normal = self.client.get_user_sites(self.demo_user_id)
         self.assertTrue(sites_normal['success'])
-        self.assertTrue(sites_normal.has_key('records'))
+        self.assertTrue('records' in sites_normal)
 
         # Testing the users sites extended version 
         sites_normal_extended = self.client.get_user_sites(self.demo_user_id, extended=True)
         self.assertTrue(sites_normal_extended['success'])
-        self.assertTrue(sites_normal_extended.has_key('records'))
-        self.assertTrue(sites_normal_extended['records'][0].has_key('tags'))
- 
-        sites_reporting = self.client.get_user_sites_reporting(self.demo_user_id)
-        self.assertNotEqual(len(sites_normal['records']), len(sites_reporting['records'])) # Warning might break if user permissions change
+        self.assertTrue('records' in sites_normal_extended)
+        self.assertTrue('tags' in sites_normal_extended['records'][0])
 
+        self.assertEqual(len(sites_normal['records']), 25)  # Warning might break if user permissions change
 
-
-    
 
 if __name__ == '__main__':
     unittest.main()
