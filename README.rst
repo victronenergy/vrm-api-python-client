@@ -13,8 +13,8 @@ Examples
 .. code:: python
     
     >> from vrmapi.vrm import VRM_API
-    >> api = VRM_API(username='vrm_username', password='vrm_password')
-    >> api.get_user_sites(api.user_id)
+    >> api = VRM_API(user_id = 'victron user id', auth_token = 'victron access token')
+    >> api.get_user_sites()
     
     >>{u'records':
           [{u'accessLevel': 1,
