@@ -32,7 +32,7 @@ Examples
       u'success': True}
     
     
-    >> api.get_consumption_site(inst_id=4470) 
+    >> api.get_consumption_stats(inst_id=4470) 
     
     >>{u'records': {u'Bc': [[1473681210000, 0.018203735351562],
        [1473692010000, 0.018211364746094],
