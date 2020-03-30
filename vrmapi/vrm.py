@@ -1,7 +1,12 @@
 # Main imports
 import requests
 import logging
-from utils import datetime_to_epoch
+import json
+import datetime
+
+# for testing
+from datetime import datetime, timedelta
+import time
 
 # setup Logger
 logger = logging.getLogger(__name__)
@@ -18,6 +23,7 @@ class VRM_API:
         Initialise API for Victron VRM
         @param - username
         @param - password
+        @param - config
         """
 
         self._initialized = False
@@ -44,7 +50,7 @@ class VRM_API:
             else:
                 raise Exception('No username or password provided')
 
-            logger.debug('Initializing API with username %s ' % self.username)
+            logger.debug('Initializing API with username %s ' % (self.username))
             self._initialized = self._login()
 
     def initialize(self):
@@ -106,6 +112,22 @@ class VRM_API:
         logger.debug("got sites for user %s %s" % (user_id, sites))
         return sites
 
+    def get_user_sites_reporting(self, user_id):
+        """
+        Download list of sites for logged in user
+        @param - user_id
+        """
+        if not self._is_initialized():
+            return None
+
+        request_url = self.USER_SITE_ENDPOINT.format(user_id=user_id)
+        site = self._send_query_request(request_url)
+        if site.has_key('records'):
+            site['records'] = filter(lambda x: x['reports_enabled'], site['records'])
+            logger.debug("got site for user with reporting enabled %s %s" % (user_id, site))
+            return site
+        return {}
+
     def get_all_users(self):
         """
         Get a list of all users registered
@@ -130,8 +152,8 @@ class VRM_API:
         if start and end:
             data_dict = {
                 'type': 'consumption',
-                'start': datetime_to_epoch(start),
-                'end': datetime_to_epoch(end)
+                'start': datetime.datetime(start).timestamp(),
+                'end': datetime.datetime(end).timestamp()
             }
         else:
             data_dict = {
@@ -145,19 +167,19 @@ class VRM_API:
 
     def get_kwh_stats(self, inst_id, start=None, end=None):
         """
-        Returns the kwhs statistics for a given site
-        @params - inst_id (installation id)
-        @params - start ( A python datetime to start from)
-        @params - end ( A python datetime to stop to)
-        """
+       Returns the kwhs statistics for a given site
+       @params - inst_id (installation id)
+       @params - start ( A python datetime to start from)
+       @params - end ( A python datetime to stop to)
+       """
         if not self._is_initialized():
             return None
 
         if start and end:
             data_dict = {
                 'type': 'kwh',
-                'start': datetime_to_epoch(start),
-                'end': datetime_to_epoch(end),
+                'start': datetime.datetime(start).timestamp(),
+                'end': datetime.datetime(end).timestamp(),
             }
         else:
             data_dict = {
@@ -183,9 +205,9 @@ class VRM_API:
 
     def kwh_aggr_stats(self, inst_id):
         """
-        Returns kwh aggregated statistics
-        @params inst_id ( installation id )
-        """
+       Returns kwh aggregated statistics
+       @params inst_id ( installation id )
+       """
         if not self._is_initialized():
             return None
 
@@ -196,10 +218,10 @@ class VRM_API:
 
     def graph_widgets(self, inst_id, measurement_codes, instance=None, start=None, end=None):
         """
-        Returns graph widgets for given measurements codes
-        @param - inst_id (installation id)
-        @param - measurement_codes (A List of the measurent codes)
-        """
+       Returns graph widgets for given measurements codes
+       @param - inst_id (installation id)
+       @param - measurement_codes (A List of the measurent codes)
+       """
         if type(measurement_codes) is not list:
             raise Exception("The measurement codes should be an array")
 
@@ -212,8 +234,8 @@ class VRM_API:
             data_dict['instance'] = instance
 
         if start and end:
-            data_dict['start'] = datetime_to_epoch(start)
-            data_dict['end'] = datetime_to_epoch(end)
+            data_dict['start'] = datetime.datetime(start).timestamp()
+            data_dict['end'] = datetime.datetime(end).timestamp()
 
         request_url = self.WIDGETS_ENDPOINT.format(inst_id=inst_id, widget_type='Graph')
         widgets = self._send_query_request(request_url, data_dict)
@@ -221,32 +243,32 @@ class VRM_API:
 
     def ve_bus_state_widget(self, inst_id, instance=None, start=None, end=None):
         """
-        Returns the ve bus state widget
-        @param - inst_id
-        @param - instance
-        @param - start
-        @param - end
-        """
+       Returns the ve bus state widget
+       @param - inst_id
+       @param - instance
+       @param - start
+       @param - end
+       """
         return self._state_graph_widgets(inst_id, 'VeBusState', instance, start, end)
 
     def mppt_state_widget(self, inst_id, instance=None, start=None, end=None):
         """
-        Returns the mppt state widget
-        @param - inst_id
-        @param - instance
-        @param - start
-        @parma - end
-        """
+      Returns the mppt state widget
+      @param - inst_id
+      @param - instance
+      @param - start
+      @parma - end
+      """
         return self._state_graph_widgets(inst_id, 'MPPTState', instance, start, end)
 
     def ve_bus_warning_and_alarms_wigdet(self, inst_id, instance=None, start=None, end=None):
         """
-        Returns teh ve bus warning and allarms widget
-        @param - inst_id
-        @param - instance
-        @param - start
-        @parma - end
-        """
+      Returns teh ve bus warning and allarms widget
+      @param - inst_id
+      @param - instance
+      @param - start
+      @parma - end
+      """
         return self._state_graph_widgets(inst_id, 'VeBusWarningsAndAlarms', instance, start, end)
 
     def battery_summary_widget(self, inst_id, instance=None):
@@ -357,8 +379,8 @@ class VRM_API:
         data_dict = {}
 
         if start and end:
-            data_dict['start'] = datetime_to_epoch(start)
-            data_dict['end'] = datetime_to_epoch(start)
+            data_dict['start'] = datetime.datetime(start).timestamp()
+            data_dict['end'] = datetime.datetime(start).timestamp()
 
         if instance:
             data_dict['instance'] = instance
@@ -380,7 +402,7 @@ class VRM_API:
             response_json = result.json()
             self._auth_token = response_json['token']
             self.user_id = response_json['idUser']
-            logger.debug('API initialized with token %s' % self._auth_token)
+            logger.debug('API initialized with token %s' % (self._auth_token))
             return True
         elif result.status_code == 401:
             logger.error("Unable to authenticate")
@@ -399,7 +421,7 @@ class VRM_API:
         if result.status_code == 200:
             response_json = result.json()
             self._auth_token = response_json['token']
-            logger.debug('API initialized with demo account , token: %s' % self._auth_token)
+            logger.debug('API initialized with demo account , token: %s' % (self._auth_token))
             return True
         else:
             logger.error('Unable to login as demo')
@@ -431,22 +453,25 @@ class VRM_API:
         data_frame = self._send_query_request(query_key, payload)
         return data_frame
 
-    def _send_query_request(self, url, data_dict=None):
+    def _send_query_request(self, url, data_dict={}):
         """
         Wrapper function to add auth token for requests
         """
+        response = None
         headers = {'X-Authorization': "Bearer %s" % self._auth_token}
-        data_dict = data_dict or {}
+
         logger.debug("Sending data to %s" % url)
         logger.debug("Sending with headers %s" % headers)
         try:
             response = requests.get(url, headers=headers, params=data_dict)
-            logger.debug("url: %s" % response.url)
+
             if response.status_code == 200:
                 return response.json()
             else:
                 logger.error("Something went wrong with request msg:%s" % response.text)
                 return {}
 
-        except Exception:
+            logger.debug("url: %s" % response.url)
+
+        except Exception as e:
             logger.exception("Error with getting request")
