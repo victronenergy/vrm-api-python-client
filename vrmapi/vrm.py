@@ -358,7 +358,7 @@ class VRM_API:
 
         if start and end:
             data_dict['start'] = datetime_to_epoch(start)
-            data_dict['end'] = datetime_to_epoch(start)
+            data_dict['end'] = datetime_to_epoch(end)
 
         if instance:
             data_dict['instance'] = instance
