@@ -34,6 +34,7 @@ class VRM_API:
         self.USER_ENDPOINT = self.API_ENDPOINT + '/v2/admin/users'
         self.USER_SITE_ENDPOINT = self.API_ENDPOINT + '/v2/users/{user_id}/installations'
         self.WIDGETS_ENDPOINT = self.API_ENDPOINT + '/v2/installations/{inst_id}/widgets/{widget_type}'
+        self.DIAG_ENDPOINT = self.API_ENDPOINT + '/v2/installations/{inst_id}/diagnostics'
 
         if demo:  # Login as demo else with credentials
             self._initialized = self._login_as_demo()
@@ -142,6 +143,18 @@ class VRM_API:
         stats = self._send_query_request(request_url, data_dict=data_dict)
         logger.debug("The stats consumption got from the api endpoint is %s " % stats)
         return stats
+    
+    def get_diag(self, inst_id, data_points=100):
+    	"""
+        @params - inst_id (installation id)
+	"""
+	if not self._is_initialized():
+	    return None
+        
+        data_dict = {'count': data_points}
+        request_url = self.DIAG_ENDPOINT.format(inst_id=inst_id)
+        diag_request = self._send_query_request(request_url, data_dict)
+        return diag_request
 
     def get_kwh_stats(self, inst_id, start=None, end=None):
         """
