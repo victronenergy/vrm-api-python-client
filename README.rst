@@ -1,6 +1,10 @@
-vrm-api is a python client for interacting with the Victron VRM portal (http://vrm.victronenergy.com)
+Python client for interacting with the Victron VRM portal (http://vrm.victronenergy.com)
 
-installation
+
+⚠️ NOT ACTIVELY MAINTAINED: please note that this library was made available at some point for reference. Right now, it is not being tested or actively maintained. However, since the VRM API has almost no breaking changes over time, this client is most likely working correctly. At Victron, we do not use this code ourselves.
+
+
+Installation
 ------------
 
 .. code:: bash
